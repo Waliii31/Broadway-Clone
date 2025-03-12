@@ -7,4 +7,3 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
 })
-git config --file .gitmodules --name-only --get-regexp path

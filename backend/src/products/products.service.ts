@@ -14,6 +14,14 @@ export class ProductsService {
     return newProduct.save();
   }
 
+  async findProductById(productId: string): Promise<Products> {
+    const product = await this.productsModel.findById(productId).exec();
+    if (!product) {
+      throw new Error('Product not found');
+    }
+    return product;
+  }
+
   async findAll() {
     return this.productsModel.find().populate('section').exec(); // Populate section details
   }

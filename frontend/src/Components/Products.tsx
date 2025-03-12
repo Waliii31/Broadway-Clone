@@ -6,9 +6,9 @@ interface Product {
   section: string;
   imageUrl: string;
   title: string;
-  description: string;
-  price: number;
-  oldPrice: number;
+  description?: string; // Make description optional
+  price: number | null; // Allow null for empty values
+  oldPrice: number | null; // Allow null for empty values
   discount: number;
   isNew: boolean;
 }
@@ -24,9 +24,9 @@ const Products: React.FC<ProductsProps> = ({ sections, setProducts }) => {
     section: "",
     imageUrl: "",
     title: "",
-    description: "",
-    price: 0,
-    oldPrice: 0,
+    description: "", // Initialize as an empty string (optional)
+    price: null, // Initialize as null
+    oldPrice: null, // Initialize as null
     discount: 0,
     isNew: false,
   });
@@ -58,8 +58,8 @@ const Products: React.FC<ProductsProps> = ({ sections, setProducts }) => {
     }
   };
 
-  const calculateDiscount = (oldPrice: number, newPrice: number): number => {
-    if (oldPrice > 0 && newPrice < oldPrice) {
+  const calculateDiscount = (oldPrice: number | null, newPrice: number | null): number => {
+    if (oldPrice && newPrice && oldPrice > 0 && newPrice < oldPrice) {
       return Math.round(((oldPrice - newPrice) / oldPrice) * 100);
     }
     return 0;
@@ -77,7 +77,7 @@ const Products: React.FC<ProductsProps> = ({ sections, setProducts }) => {
       section: product.section,
       image: product.imageUrl,
       title: product.title,
-      description: product.description,
+      description: product.description || undefined, // Send undefined if description is empty
       price: product.price,
       oldPrice: product.oldPrice,
       discount: discount,
@@ -99,9 +99,9 @@ const Products: React.FC<ProductsProps> = ({ sections, setProducts }) => {
         section: "",
         imageUrl: "",
         title: "",
-        description: "",
-        price: 0,
-        oldPrice: 0,
+        description: "", // Reset to empty string
+        price: null, // Reset to null
+        oldPrice: null, // Reset to null
         discount: 0,
         isNew: false,
       });
@@ -113,7 +113,6 @@ const Products: React.FC<ProductsProps> = ({ sections, setProducts }) => {
       alert("Failed to add/update product. Please try again.");
     }
   };
-
 
   return (
     <>
@@ -134,9 +133,9 @@ const Products: React.FC<ProductsProps> = ({ sections, setProducts }) => {
         <input
           type="file"
           onChange={handleFileChange}
-          className="p-2 bg-gray-800 text-white rounded-md w-full"
+          className="p-2 bg-gray-800 text-white rounded-md w-full cursor-pointer"
         />
-        <button onClick={uploadImage} className="bg-yellow-500 text-black p-2 rounded-md">
+        <button onClick={uploadImage} className="bg-yellow-500 cursor-pointer text-black p-2 rounded-md">
           Upload Image
         </button>
         <input
@@ -147,7 +146,7 @@ const Products: React.FC<ProductsProps> = ({ sections, setProducts }) => {
           onChange={(e) => setProduct({ ...product, title: e.target.value })}
         />
         <textarea
-          placeholder="Description"
+          placeholder="Description (Optional)"
           className="p-2 bg-gray-800 text-white rounded-md w-full"
           value={product.description}
           onChange={(e) => setProduct({ ...product, description: e.target.value })}
@@ -156,20 +155,20 @@ const Products: React.FC<ProductsProps> = ({ sections, setProducts }) => {
           type="number"
           placeholder="Price"
           className="p-2 bg-gray-800 text-white rounded-md w-full"
-          value={isNaN(product.price) ? "" : product.price}
+          value={product.price === null ? "" : product.price} // Handle null value
           onChange={(e) => {
             const value = parseFloat(e.target.value);
-            setProduct({ ...product, price: isNaN(value) ? 0 : value });
+            setProduct({ ...product, price: isNaN(value) ? null : value }); // Set to null if NaN
           }}
         />
         <input
           type="number"
           placeholder="Old Price"
           className="p-2 bg-gray-800 text-white rounded-md w-full"
-          value={isNaN(product.oldPrice) ? "" : product.oldPrice}
+          value={product.oldPrice === null ? "" : product.oldPrice} // Handle null value
           onChange={(e) => {
             const value = parseFloat(e.target.value);
-            setProduct({ ...product, oldPrice: isNaN(value) ? 0 : value });
+            setProduct({ ...product, oldPrice: isNaN(value) ? null : value }); // Set to null if NaN
           }}
         />
         <label className="flex items-center gap-2">

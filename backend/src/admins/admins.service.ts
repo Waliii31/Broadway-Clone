@@ -15,12 +15,37 @@ export class AdminService {
     if (!adminData.adminPassword) {
       throw new Error('Admin password is required');
     }
-    const hashedPassword = await bcrypt.hash(adminData.adminPassword, 10); // Hash the password
+    const hashedPassword = await bcrypt.hash(adminData.adminPassword, 10);
     const newAdmin = new this.adminModel({
       ...adminData,
       adminPassword: hashedPassword,
     });
     return newAdmin.save();
+  }
+
+  // Update an admin by ID
+  async updateAdmin(adminId: string, updateData: Partial<Admins>): Promise<Admins> {
+    const admin = await this.adminModel.findById(adminId).exec();
+    if (!admin) {
+      throw new NotFoundException(`Admin with ID ${adminId} not found`);
+    }
+  
+    // Only hash and update the password if a new one is provided
+    if (updateData.adminPassword) {
+      updateData.adminPassword = await bcrypt.hash(updateData.adminPassword, 10);
+    } else {
+      // Keep the existing hashed password
+      updateData.adminPassword = admin.adminPassword;
+    }
+  
+    const updatedAdmin = await this.adminModel
+      .findByIdAndUpdate(adminId, updateData, { new: true })
+      .exec();
+  
+    if (!updatedAdmin) {
+      throw new NotFoundException(`Admin with ID ${adminId} not found after update`);
+    }
+    return updatedAdmin;
   }
 
   // Get all admins
@@ -35,20 +60,6 @@ export class AdminService {
       throw new NotFoundException(`Admin with ID ${adminId} not found`);
     }
     return admin;
-  }
-
-  // Update an admin by ID
-  async updateAdmin(adminId: string, updateData: Partial<Admins>): Promise<Admins> {
-    if (updateData.adminPassword) {
-      updateData.adminPassword = await bcrypt.hash(updateData.adminPassword, 10); // Hash the new password
-    }
-    const updatedAdmin = await this.adminModel
-      .findByIdAndUpdate(adminId, updateData, { new: true })
-      .exec();
-    if (!updatedAdmin) {
-      throw new NotFoundException(`Admin with ID ${adminId} not found`);
-    }
-    return updatedAdmin;
   }
 
   // Delete an admin by ID

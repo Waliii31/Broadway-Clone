@@ -25,10 +25,10 @@ type Product = {
 };
 
 type Admin = {
-  name: string;
-  email: string;
-  password: string;
-  roles: string[];
+  adminName: string;
+  adminEmail: string;
+  adminPassword: string;
+  adminRoles: string[];
 };
 
 const AdminPanel: React.FC = () => {

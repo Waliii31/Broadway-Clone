@@ -1,51 +1,78 @@
 import {
-    Controller,
-    Get,
-    Post,
-    Body,
-    Param,
-    Put,
-    Delete,
-    UploadedFile,
-    UseInterceptors,
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Put,
+  Delete,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ProductsService } from './products.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { multerConfig } from './multer.config';
+import { ProductsService } from './products.service';
+import { CloudinaryService } from '../cloudinary/cloudinary.service'; // Import CloudinaryService
 
 @Controller('products')
 export class ProductsController {
-    constructor(private readonly productsService: ProductsService) { }
+  constructor(
+    private readonly productsService: ProductsService,
+    private readonly cloudinaryService: CloudinaryService, // Inject CloudinaryService
+  ) {}
 
-    @Post('image')
-    @UseInterceptors(FileInterceptor('file', multerConfig))
-    uploadImage(@UploadedFile() file: Express.Multer.File) {
-        return { imageUrl: `http://localhost:3000/uploads/${file.filename}` };
+  // Upload product image to Cloudinary
+  @Post('image')
+  @UseInterceptors(FileInterceptor('file')) // 'file' is the field name for the image
+  async uploadImage(@UploadedFile() file: Express.Multer.File) {
+    try {
+      // Upload the image to Cloudinary
+      const imageUrl = await this.cloudinaryService.uploadImage(file);
+      return { imageUrl }; // Return the Cloudinary image URL
+    } catch (error) {
+      return { error: 'Failed to upload image', details: error.message };
     }
+  }
 
-    @Post()
-    async create(@Body() productDto: any) {
-        console.log("Received product data:", productDto);
-        return this.productsService.create(productDto);
-    }
+  // Create a new product
+  @Post()
+  async create(@Body() productDto: any) {
+    console.log('Received product data:', productDto);
+    return this.productsService.create(productDto);
+  }
 
-    @Get()
-    async findAll() {
-        return this.productsService.findAll();
-    }
+  // Fetch all products
+  @Get()
+  async findAll() {
+    return this.productsService.findAll();
+  }
 
-    @Get('section/:sectionId')
-    async findBySection(@Param('sectionId') sectionId: string) {
-        return this.productsService.findBySection(sectionId);
-    }
+  // Fetch a product by ID (GET)
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    return this.productsService.findProductById(id);
+  }
 
-    @Put(':id')
-    async update(@Param('id') id: string, @Body() productDto: any) {
-        return this.productsService.update(id, productDto);
-    }
+  // Fetch a product by ID (POST)
+  @Post('find-product')
+  async findProductById(@Body('productId') productId: string) {
+    return this.productsService.findProductById(productId);
+  }
 
-    @Delete(':id')
-    async delete(@Param('id') id: string) {
-        return this.productsService.delete(id);
-    }
+  // Fetch products by section ID
+  @Get('section/:sectionId')
+  async findBySection(@Param('sectionId') sectionId: string) {
+    return this.productsService.findBySection(sectionId);
+  }
+
+  // Update a product by ID
+  @Put(':id')
+  async update(@Param('id') id: string, @Body() productDto: any) {
+    return this.productsService.update(id, productDto);
+  }
+
+  // Delete a product by ID
+  @Delete(':id')
+  async delete(@Param('id') id: string) {
+    return this.productsService.delete(id);
+  }
 }
