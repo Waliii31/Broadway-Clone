@@ -1,3 +1,4 @@
+import { ArrowRight, Minus, Plus } from "lucide-react";
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 
@@ -14,96 +15,139 @@ interface Product {
 }
 
 interface CartProps {
-  cartItems: string[]; // Array of product IDs
+  cartItems: CartItem[];
+  setCartItems: React.Dispatch<React.SetStateAction<CartItem[]>>;
 }
 
-const Cart: React.FC<CartProps> = ({ cartItems }) => {
+interface CartItem {
+  id: string;
+  quantity: number;
+}
+
+const Cart: React.FC<CartProps> = ({ cartItems, setCartItems }) => {
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
-    // Fetch product details for each item in the cart
-    cartItems.forEach((itemId) => {
-      sendProductId(itemId);
-    });
+    if (!cartItems?.length) return;
+
+    const fetchProducts = async () => {
+      try {
+        const responses = await Promise.all(
+          cartItems.map((item) =>
+            axios.post("http://localhost:3000/products/find-product", {
+              productId: item.id,
+            })
+          )
+        );
+
+        setProducts(responses.map((res) => res.data));
+      } catch (error) {
+        console.error("Error fetching product details:", error);
+      }
+    };
+
+    fetchProducts();
   }, [cartItems]);
 
-  const sendProductId = async (productId: string) => {
-    try {
-      const response = await axios.post('http://localhost:3000/products/find-product', {
-        productId,
-      });
-      const productData = response.data;
-      console.log(productData)
-      setProducts((prevProducts) => [...prevProducts, productData]);
-    } catch (error) {
-      console.error("Error fetching product details:", error);
-    }
+  const updateQuantity = (productId: string, amount: number) => {
+    setCartItems((prevCart) =>
+      prevCart.map((item) =>
+        item.id === productId
+          ? { ...item, quantity: Math.max(1, item.quantity + amount) }
+          : item
+      )
+    );
   };
 
+  const subtotal = products.reduce((total, product) => {
+    const cartItem = cartItems.find((item) => item.id === product._id);
+    return total + (cartItem ? cartItem.quantity * product.price : 0);
+  }, 0);
+
+  const deliveryCharge = 60;
+  const gst = subtotal * 0.15;
+  const totalPrice = subtotal + deliveryCharge + gst;
+
   return (
-    <div className="bg-gray-50 min-h-screen py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Your Cart</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.map((product) => (
-            <div key={product._id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-              {/* Product Image */}
-              <img
-                src={product.image}
-                alt={product.title}
-                className="w-full h-48 object-cover"
-              />
-
-              {/* Product Details */}
-              <div className="p-6">
-                {/* Title and New Badge */}
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-xl font-semibold text-gray-900">{product.title}</h2>
-                  {product.isNew && (
-                    <span className="bg-green-100 text-green-800 text-sm font-medium px-2 py-1 rounded-full">
-                      New
-                    </span>
-                  )}
-                </div>
-
-                {/* Description */}
-                <p className="text-gray-600 text-sm mb-4">{product.description}</p>
-
-                {/* Price and Discount */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-2xl font-bold text-gray-900">
-                      ${product.price.toFixed(2)}
-                    </span>
-                    {product.oldPrice && (
-                      <span className="text-sm text-gray-500 line-through">
-                        ${product.oldPrice.toFixed(2)}
-                      </span>
-                    )}
+    <div className="w-full min-h-screen h-full p-4">
+      <h1 className="text-5xl text-center mt-10 text-white font-semibold mb-4">
+        Your Cart
+      </h1>
+      {cartItems.length > 0 ? (
+        <div className="flex flex-col md:flex-row mt-10 md:mt-20 justify-center items-center md:items-start gap-10 md:gap-16">
+          {/* Cart Items */}
+          <div className="flex flex-col justify-center gap-5 items-center w-full md:w-auto">
+            {products.map((product) => {
+              const cartItem = cartItems.find((item) => item.id === product._id);
+              return (
+                <div
+                  key={product._id}
+                  className="flex flex-col sm:flex-row items-center bg-[#1C1C1D] text-white p-4 rounded-lg w-full max-w-5xl md:max-w-lg"
+                >
+                  <img
+                    src={product.image}
+                    alt={product.title}
+                    className="w-24 h-24 rounded-lg object-cover"
+                  />
+                  <div className="ml-0 sm:ml-4 flex-1 text-center sm:text-left">
+                    <h2 className="text-lg font-bold">{product.title}</h2>
+                    <p className="text-gray-400 text-sm">{product.description}</p>
                   </div>
-                  {product.discount && (
-                    <span className="bg-red-100 text-red-800 text-sm font-medium px-2 py-1 rounded-full">
-                      {product.discount}% off
+                  <div className="flex items-center space-x-2 mt-3 sm:mt-0">
+                    <button
+                      className="bg-[#57491A] text-black w-8 h-8 rounded-full flex items-center justify-center"
+                      onClick={() => updateQuantity(product._id, -1)}
+                    >
+                      <Minus size={15} />
+                    </button>
+                    <span className="text-lg font-bold">
+                      {cartItem?.quantity || 1}
                     </span>
-                  )}
+                    <button
+                      className="bg-[#FFC714] text-black w-8 h-8 rounded-full flex items-center justify-center"
+                      onClick={() => updateQuantity(product._id, 1)}
+                    >
+                      <Plus size={15} />
+                    </button>
+                  </div>
+                  <span className="ml-0 sm:ml-4 bg-yellow-700 text-black px-3 py-1 rounded-lg mt-3 sm:mt-0">
+                    Rs {cartItem?.quantity ? cartItem.quantity * product.price : product.price}
+                  </span>
                 </div>
-
-                {/* Add to Cart Button */}
-                <button className="mt-4 w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition-colors duration-300">
-                  Add to Cart
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Empty Cart Message */}
-        {products.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-600 text-lg">Your cart is empty. Start adding some delicious pizzas!</p>
+              );
+            })}
           </div>
-        )}
-      </div>
+
+          {/* Price Summary */}
+          <div className="flex w-80 flex-col gap-3">
+            <div className="text-gray-300 flex justify-between w-full max-w-sm">
+              <h4 className="text-md font-semibold">Subtotal:</h4>
+              <h4 className="text-md text-white font-semibold">Rs {subtotal.toFixed(2)}</h4>
+            </div>
+            <div className="text-gray-300 flex justify-between w-full max-w-sm">
+              <h4 className="text-md font-semibold">Delivery:</h4>
+              <h4 className="text-md text-white font-semibold">Rs {deliveryCharge.toFixed(2)}</h4>
+            </div>
+            <div className="text-gray-300 flex justify-between w-full max-w-sm">
+              <h4 className="text-md font-semibold">GST 15%:</h4>
+              <h4 className="text-md text-white font-semibold">Rs {gst.toFixed(2)}</h4>
+            </div>
+            <div className="text-xl text-[#FFC714] font-semibold flex justify-between w-full max-w-sm">
+              <h4>Total:</h4>
+              <h4 className="text-white font-semibold">Rs {totalPrice.toFixed(2)}</h4>
+            </div>
+            <button className="bg-[#292929] text-white px-6 py-3 rounded-lg mt-5 flex justify-center items-center text-xl">
+              Continue <ArrowRight />
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="text-white flex justify-center items-center text-center mt-10 w-full h-full min-h-[78vh]">
+          <div className="bg-[#FDC700] w-56 h-56 rounded-full flex justify-center items-center">
+            <p className="font-normal text-3xl">Your Cart is <br /> <span className="font-bold">Empty</span></p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

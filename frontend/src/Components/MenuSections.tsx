@@ -24,10 +24,16 @@ interface MenuSectionsProps {
   addToCart: (id: string) => void; // ✅ Explicitly type addToCart function
 }
 
+interface CartItem {
+  id: string;
+  quantity: number;
+}
+
 const MenuSections: React.FC<MenuSectionsProps> = ({ addToCart }) => {
   const [sections, setSections] = useState<Section[]>([]);
   const [menuItems, setMenuItems] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [cart, setCart] = useState<CartItem[]>([]); // Track quantity properly
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,14 +55,30 @@ const MenuSections: React.FC<MenuSectionsProps> = ({ addToCart }) => {
     fetchData();
   }, []);
 
+  const handleAddToCart = (productId: string) => {
+    setCart((prevCart) => {
+      const existingItem = prevCart.find((item) => item.id === productId);
+
+      if (existingItem) {
+        return prevCart.map((item) =>
+          item.id === productId ? { ...item, quantity: item.quantity + 1 } : item
+        );
+      } else {
+        return [...prevCart, { id: productId, quantity: 1 }];
+      }
+    });
+
+    addToCart(productId); // Pass product ID to parent component
+  };
+
   if (isLoading) {
     return <div className="text-white text-center p-6">Loading...</div>;
   }
 
   return (
     <section className="p-6">
-      <Header/>
-      <Banner/>
+      <Header />
+      <Banner />
       {sections.map((section: Section) => {
         const filteredItems = menuItems.filter(
           (item: Product) => item.section._id === section._id
@@ -69,20 +91,23 @@ const MenuSections: React.FC<MenuSectionsProps> = ({ addToCart }) => {
 
             {filteredItems.length > 0 ? (
               <div className="flex justify-start items-stretch gap-6 flex-wrap">
-                {filteredItems.map((item: Product) => (
-                  <Card
-                    key={item._id}
-                    id={item._id} // ✅ Pass the correct product ID
-                    image={item.image || "defaultImagePath.jpg"}
-                    title={item.title}
-                    description={item.description}
-                    price={item.price}
-                    oldPrice={item.oldPrice}
-                    isNew={item.isNew}
-                    addToCart={addToCart} // ✅ Pass function
-                    cartNum={0} // Pass a default value for cartNum
-                  />
-                ))}
+                {filteredItems.map((item: Product) => {
+                  const cartItem = cart.find((ci) => ci.id === item._id);
+                  return (
+                    <Card
+                      key={item._id}
+                      id={item._id}
+                      image={item.image || "defaultImagePath.jpg"}
+                      title={item.title}
+                      description={item.description}
+                      price={item.price}
+                      oldPrice={item.oldPrice}
+                      isNew={item.isNew}
+                      addToCart={() => handleAddToCart(item._id)}
+                      cartNum={cartItem ? cartItem.quantity : 0} // Show correct quantity
+                    />
+                  );
+                })}
               </div>
             ) : (
               <p className="text-gray-400">No items available in this category.</p>
