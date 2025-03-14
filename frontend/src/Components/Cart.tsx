@@ -14,21 +14,22 @@ interface Product {
   isNew: boolean;
 }
 
-interface CartProps {
+type CartProps = {
   cartItems: CartItem[];
   setCartItems: React.Dispatch<React.SetStateAction<CartItem[]>>;
-}
+  onContinue: (data: { cartItems: { productId: string; quantity: number }[]; totalPrice: number }) => void;
+};
 
 interface CartItem {
   id: string;
   quantity: number;
 }
 
-const Cart: React.FC<CartProps> = ({ cartItems, setCartItems }) => {
+const Cart: React.FC<CartProps> = ({ cartItems, setCartItems, onContinue }) => {
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
-    if (!cartItems?.length) return;
+    if (!cartItems.length) return;
 
     const fetchProducts = async () => {
       try {
@@ -59,14 +60,26 @@ const Cart: React.FC<CartProps> = ({ cartItems, setCartItems }) => {
     );
   };
 
+  // **Calculate Prices**
   const subtotal = products.reduce((total, product) => {
     const cartItem = cartItems.find((item) => item.id === product._id);
     return total + (cartItem ? cartItem.quantity * product.price : 0);
   }, 0);
 
-  const deliveryCharge = 60;
+  const deliveryCharge = 60; // Only add delivery charge if cart is not empty
   const gst = subtotal * 0.15;
-  const totalPrice = subtotal + deliveryCharge + gst;
+  const totalAmount = subtotal + deliveryCharge + gst;
+
+  const handleCheckout = () => {
+    onContinue({
+      cartItems: cartItems.map((item) => ({
+        productId: item.id,
+        quantity: item.quantity,
+      })),
+      totalPrice: totalAmount,
+    });
+  };
+
 
   return (
     <div className="w-full min-h-screen h-full p-4">
@@ -120,24 +133,29 @@ const Cart: React.FC<CartProps> = ({ cartItems, setCartItems }) => {
 
           {/* Price Summary */}
           <div className="flex w-80 flex-col gap-3">
-            <div className="text-gray-300 flex justify-between w-full max-w-sm">
-              <h4 className="text-md font-semibold">Subtotal:</h4>
-              <h4 className="text-md text-white font-semibold">Rs {subtotal.toFixed(2)}</h4>
+            <div className=" flex flex-col gap-2">
+              <div className="text-md flex justify-between w-full max-w-sm">
+                <h4 className="text-gray-300 font-semibold">Subtotal:</h4>
+                <h4 className="text-white font-semibold">Rs {subtotal}</h4>
+              </div>
+              <div className="text-md flex justify-between w-full max-w-sm">
+                <h4 className="text-gray-300 font-semibold">GST 15%:</h4>
+                <h4 className="text-white font-semibold">Rs {gst}</h4>
+              </div>
+              <div className="text-md flex justify-between w-full max-w-sm">
+                <h4 className="text-gray-300 font-semibold">Delivery:</h4>
+                <h4 className="text-white font-semibold">Rs {deliveryCharge}</h4>
+              </div>
+              <div className="flex justify-between w-full max-w-sm">
+                <h4 className="text-[#FFC714] text-xl font-semibold">Total:</h4>
+                <h4 className="text-white text-xl font-bold">Rs {totalAmount}</h4>
+              </div>
             </div>
-            <div className="text-gray-300 flex justify-between w-full max-w-sm">
-              <h4 className="text-md font-semibold">Delivery:</h4>
-              <h4 className="text-md text-white font-semibold">Rs {deliveryCharge.toFixed(2)}</h4>
-            </div>
-            <div className="text-gray-300 flex justify-between w-full max-w-sm">
-              <h4 className="text-md font-semibold">GST 15%:</h4>
-              <h4 className="text-md text-white font-semibold">Rs {gst.toFixed(2)}</h4>
-            </div>
-            <div className="text-xl text-[#FFC714] font-semibold flex justify-between w-full max-w-sm">
-              <h4>Total:</h4>
-              <h4 className="text-white font-semibold">Rs {totalPrice.toFixed(2)}</h4>
-            </div>
-            <button className="bg-[#292929] text-white px-6 py-3 rounded-lg mt-5 flex justify-center items-center text-xl">
-              Continue <ArrowRight />
+            <button
+              className="bg-[#292929] text-white cursor-pointer px-6 py-3 rounded-lg mt-5 flex justify-center gap-2 items-center text-xl"
+              onClick={handleCheckout}
+            >
+              Proceed To Checkout <ArrowRight />
             </button>
           </div>
         </div>

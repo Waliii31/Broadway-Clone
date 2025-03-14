@@ -41,6 +41,9 @@ export class Orders {
 
   @Prop({ required: true, enum: PaymentType })
   paymentType: PaymentType;
+
+  @Prop({ required: true })
+  totalPrice: number;
 }
 
 export const OrdersSchema = SchemaFactory.createForClass(Orders);

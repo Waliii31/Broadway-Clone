@@ -2,15 +2,27 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Orders, OrdersDocument } from '../Schemas/orders.schema';
-import { CreateOrderDto, UpdateOrderDto } from '../dto/order.dto';
 
 @Injectable()
 export class OrdersService {
   constructor(@InjectModel(Orders.name) private ordersModel: Model<OrdersDocument>) {}
 
-  async createOrder(createOrderDto: CreateOrderDto): Promise<Orders> {
-    const newOrder = new this.ordersModel(createOrderDto);
-    return newOrder.save();
+  async createOrder(orderData: any): Promise<Orders> {
+    const newOrder = new this.ordersModel({
+      fullName: orderData.fullName,
+      address: orderData.address,
+      phone: orderData.phone,
+      email: orderData.email,
+      specialInstructions: orderData.specialInstructions,
+      status: orderData.status || 'Cooking Food',
+      paymentType: orderData.paymentType,
+      products: orderData.products.map((product: any) => ({
+        product: product.product,
+        quantity: product.quantity,
+      })),
+      totalPrice: orderData.totalPrice,
+    });
+    return await newOrder.save();
   }
 
   async getAllOrders(): Promise<Orders[]> {
@@ -25,9 +37,9 @@ export class OrdersService {
     return order;
   }
 
-  async updateOrder(id: string, updateOrderDto: UpdateOrderDto): Promise<Orders> {
+  async updateOrder(id: string, updateData: any): Promise<Orders> {
     const updatedOrder = await this.ordersModel
-      .findByIdAndUpdate(id, updateOrderDto, { new: true })
+      .findByIdAndUpdate(id, updateData, { new: true })
       .populate('products.product')
       .exec();
     if (!updatedOrder) {
