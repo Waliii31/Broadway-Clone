@@ -5,6 +5,11 @@ import { OrdersService } from './orders.service';
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
+  @Get(':id/status')
+  async getOrderStatus(@Param('id') id: string) {
+    return this.ordersService.getOrderStatus(id);
+  }
+
   @Post()
   async createOrder(@Body() orderData: any) {
     return this.ordersService.createOrder(orderData);

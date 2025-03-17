@@ -1,32 +1,21 @@
-import { ArrowRight, Minus, Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom"; // ✅ Import useNavigate
+import { useCart } from "../context/CartContext";
+import { useEffect, useState } from "react";
 import axios from "axios";
-import React, { useState, useEffect } from "react";
+import { ArrowRight, Minus, Plus } from "lucide-react";
 
 interface Product {
   _id: string;
-  section: string;
-  image: string;
   title: string;
   description: string;
   price: number;
-  oldPrice?: number;
-  discount?: number;
-  isNew: boolean;
+  image: string;
 }
 
-type CartProps = {
-  cartItems: CartItem[];
-  setCartItems: React.Dispatch<React.SetStateAction<CartItem[]>>;
-  onContinue: (data: { cartItems: { productId: string; quantity: number }[]; totalPrice: number }) => void;
-};
-
-interface CartItem {
-  id: string;
-  quantity: number;
-}
-
-const Cart: React.FC<CartProps> = ({ cartItems, setCartItems, onContinue }) => {
+const Cart: React.FC = () => {
+  const { cartItems, setCartItems, onContinue } = useCart();
   const [products, setProducts] = useState<Product[]>([]);
+  const navigate = useNavigate(); // ✅ Initialize useNavigate
 
   useEffect(() => {
     if (!cartItems.length) return;
@@ -66,23 +55,26 @@ const Cart: React.FC<CartProps> = ({ cartItems, setCartItems, onContinue }) => {
     return total + (cartItem ? cartItem.quantity * product.price : 0);
   }, 0);
 
-  const deliveryCharge = 60; // Only add delivery charge if cart is not empty
-  const gst = subtotal * 0.15;
+  const deliveryCharge = 60;
+  const gst = Math.round(subtotal * 0.15);
   const totalAmount = subtotal + deliveryCharge + gst;
 
   const handleCheckout = () => {
-    onContinue({
+    const orderDetails = {
       cartItems: cartItems.map((item) => ({
         productId: item.id,
         quantity: item.quantity,
       })),
       totalPrice: totalAmount,
-    });
+    };
+
+    onContinue(orderDetails); // ✅ Call onContinue if needed
+
+    navigate("/order-details", { state: orderDetails }); // ✅ Navigate with state
   };
 
-
   return (
-    <div className="w-full min-h-screen h-full p-4">
+    <div className="w-full mt-20 bg-[#121212] min-h-screen h-full p-4">
       <h1 className="text-5xl text-center mt-10 text-white font-semibold mb-4">
         Your Cart
       </h1>

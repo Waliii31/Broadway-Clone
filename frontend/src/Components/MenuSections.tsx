@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react"; // ✅ Fix missing imports
-import Card from "./Card"; // ✅ Ensure correct import path
-import Header from "./Header";
+import { useContext, useState, useEffect } from "react";
+import { CartContext } from "../context/CartContext";
+import Card from "./Card";
 import Banner from "./Banner";
-// import crust from "../assets/crust.jpg"; // ✅ Fix missing import (use actual image path)
 
 interface Product {
   _id: string;
@@ -20,20 +19,18 @@ interface Section {
   title: string;
 }
 
-interface MenuSectionsProps {
-  addToCart: (id: string) => void; // ✅ Explicitly type addToCart function
-}
+const MenuSections = () => {
+  const cartContext = useContext(CartContext);
 
-interface CartItem {
-  id: string;
-  quantity: number;
-}
+  if (!cartContext) {
+    throw new Error("MenuSections must be used within a CartProvider");
+  }
 
-const MenuSections: React.FC<MenuSectionsProps> = ({ addToCart }) => {
+  const { addToCart, cartItems } = cartContext;
+
   const [sections, setSections] = useState<Section[]>([]);
   const [menuItems, setMenuItems] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [cart, setCart] = useState<CartItem[]>([]); // Track quantity properly
 
   useEffect(() => {
     const fetchData = async () => {
@@ -55,34 +52,15 @@ const MenuSections: React.FC<MenuSectionsProps> = ({ addToCart }) => {
     fetchData();
   }, []);
 
-  const handleAddToCart = (productId: string) => {
-    setCart((prevCart) => {
-      const existingItem = prevCart.find((item) => item.id === productId);
-
-      if (existingItem) {
-        return prevCart.map((item) =>
-          item.id === productId ? { ...item, quantity: item.quantity + 1 } : item
-        );
-      } else {
-        return [...prevCart, { id: productId, quantity: 1 }];
-      }
-    });
-
-    addToCart(productId); // Pass product ID to parent component
-  };
-
   if (isLoading) {
     return <div className="text-white text-center p-6">Loading...</div>;
   }
 
   return (
-    <section className="p-6">
-      <Header />
+    <section className="px-6 py-6">
       <Banner />
-      {sections.map((section: Section) => {
-        const filteredItems = menuItems.filter(
-          (item: Product) => item.section._id === section._id
-        );
+      {sections.map((section) => {
+        const filteredItems = menuItems.filter((item) => item.section?._id === section._id);
 
         return (
           <div key={section._id}>
@@ -91,8 +69,8 @@ const MenuSections: React.FC<MenuSectionsProps> = ({ addToCart }) => {
 
             {filteredItems.length > 0 ? (
               <div className="flex justify-start items-stretch gap-6 flex-wrap">
-                {filteredItems.map((item: Product) => {
-                  const cartItem = cart.find((ci) => ci.id === item._id);
+                {filteredItems.map((item) => {
+                  const cartItem = cartItems.find((ci) => ci.id === item._id);
                   return (
                     <Card
                       key={item._id}
@@ -103,8 +81,8 @@ const MenuSections: React.FC<MenuSectionsProps> = ({ addToCart }) => {
                       price={item.price}
                       oldPrice={item.oldPrice}
                       isNew={item.isNew}
-                      addToCart={() => handleAddToCart(item._id)}
-                      cartNum={cartItem ? cartItem.quantity : 0} // Show correct quantity
+                      addToCart={() => addToCart(item._id)}
+                      cartNum={cartItem ? cartItem.quantity : 0}
                     />
                   );
                 })}

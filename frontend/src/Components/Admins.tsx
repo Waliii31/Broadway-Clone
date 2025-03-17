@@ -32,7 +32,7 @@ const Admins: React.FC<AdminsProps> = ({ admins, setAdmins }) => {
 
   const fetchAdmins = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/admins");
+      const response = await axios.get("http://localhost:3000/admin");
       // Ensure each admin has a roles array
       const validatedAdmins = response.data.map((admin: Admin) => ({
         ...admin,
@@ -47,7 +47,7 @@ const Admins: React.FC<AdminsProps> = ({ admins, setAdmins }) => {
   const addAdmin = async () => {
     if (newAdmin.adminEmail && newAdmin.adminPassword && newAdmin.adminRoles.length > 0) {
       try {
-        const response = await axios.post("http://localhost:3000/admins", {
+        const response = await axios.post("http://localhost:3000/admin/create", {
           adminName: newAdmin.adminName, // Use adminName instead of name
           adminEmail: newAdmin.adminEmail, // Use adminEmail instead of email
           adminPassword: newAdmin.adminPassword, // Use adminPassword instead of password
@@ -75,7 +75,7 @@ const Admins: React.FC<AdminsProps> = ({ admins, setAdmins }) => {
           payload.adminPassword = newAdmin.adminPassword;
         }
   
-        const response = await axios.put(`http://localhost:3000/admins/${editAdminId}`, payload);
+        const response = await axios.put(`http://localhost:3000/admin/${editAdminId}`, payload);
         const updatedAdmins = admins.map((admin) =>
           admin._id === editAdminId ? response.data : admin
         );
@@ -90,7 +90,7 @@ const Admins: React.FC<AdminsProps> = ({ admins, setAdmins }) => {
 
   const deleteAdmin = async (adminId: string) => {
     try {
-      await axios.delete(`http://localhost:3000/admins/${adminId}`);
+      await axios.delete(`http://localhost:3000/admin/${adminId}`);
       const updatedAdmins = admins.filter((admin) => admin._id !== adminId);
       setAdmins(updatedAdmins);
     } catch (error) {

@@ -4,7 +4,7 @@ import applestore from '../assets/applestore.png'
 
 const Footer = () => {
   return (
-    <footer className='w-full px-28 mb-10'>
+    <footer className='w-full bg-[#121212] px-6 py-10'>
         <div className="flex justify-between flex-wrap items-center">
             <div className='flex justify-center items-center'>
                 <img className='w-20' src={mobile} alt="" />

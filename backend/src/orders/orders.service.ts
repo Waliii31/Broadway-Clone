@@ -7,6 +7,14 @@ import { Orders, OrdersDocument } from '../Schemas/orders.schema';
 export class OrdersService {
   constructor(@InjectModel(Orders.name) private ordersModel: Model<OrdersDocument>) {}
 
+  async getOrderStatus(id: string): Promise<{ status: string }> {
+    const order = await this.ordersModel.findById(id).exec();
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${id} not found`);
+    }
+    return { status: order.status };
+  }
+
   async createOrder(orderData: any): Promise<Orders> {
     const newOrder = new this.ordersModel({
       fullName: orderData.fullName,
