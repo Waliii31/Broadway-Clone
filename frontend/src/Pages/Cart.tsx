@@ -62,14 +62,14 @@ const Cart: React.FC = () => {
   const handleCheckout = () => {
     const orderDetails = {
       cartItems: cartItems.map((item) => ({
-        productId: item.id,
+        productId: item.id, // ✅ Use item.id instead of item._id
         quantity: item.quantity,
       })),
       totalPrice: totalAmount,
     };
-
+  
     onContinue(orderDetails); // ✅ Call onContinue if needed
-
+  
     navigate("/order-details", { state: orderDetails }); // ✅ Navigate with state
   };
 

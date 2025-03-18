@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 interface Admin {
-  _id?: string; // Added _id for backend reference
+  _id?: string;
   adminName: string;
   adminEmail: string;
   adminPassword: string;
@@ -36,7 +36,7 @@ const Admins: React.FC<AdminsProps> = ({ admins, setAdmins }) => {
       // Ensure each admin has a roles array
       const validatedAdmins = response.data.map((admin: Admin) => ({
         ...admin,
-        roles: admin.adminRoles || [], // Fallback to empty array if roles is undefined
+        adminRoles: admin.adminRoles || [], // Fallback to empty array if roles is undefined
       }));
       setAdmins(validatedAdmins);
     } catch (error) {
@@ -48,10 +48,10 @@ const Admins: React.FC<AdminsProps> = ({ admins, setAdmins }) => {
     if (newAdmin.adminEmail && newAdmin.adminPassword && newAdmin.adminRoles.length > 0) {
       try {
         const response = await axios.post("http://localhost:3000/admin/create", {
-          adminName: newAdmin.adminName, // Use adminName instead of name
-          adminEmail: newAdmin.adminEmail, // Use adminEmail instead of email
-          adminPassword: newAdmin.adminPassword, // Use adminPassword instead of password
-          adminRoles: newAdmin.adminRoles, // Use adminRoles instead of roles
+          adminName: newAdmin.adminName,
+          adminEmail: newAdmin.adminEmail,
+          adminPassword: newAdmin.adminPassword,
+          adminRoles: newAdmin.adminRoles,
         });
         setAdmins([...admins, response.data]);
         setNewAdmin({ adminName: "", adminEmail: "", adminPassword: "", adminRoles: [] });
@@ -69,12 +69,12 @@ const Admins: React.FC<AdminsProps> = ({ admins, setAdmins }) => {
           adminEmail: newAdmin.adminEmail,
           adminRoles: newAdmin.adminRoles,
         };
-  
+
         // Only include the password if it has been changed
         if (newAdmin.adminPassword) {
           payload.adminPassword = newAdmin.adminPassword;
         }
-  
+
         const response = await axios.put(`http://localhost:3000/admin/${editAdminId}`, payload);
         const updatedAdmins = admins.map((admin) =>
           admin._id === editAdminId ? response.data : admin
@@ -90,6 +90,17 @@ const Admins: React.FC<AdminsProps> = ({ admins, setAdmins }) => {
 
   const deleteAdmin = async (adminId: string) => {
     try {
+      // Check if the admin being deleted has all three roles
+      const adminToDelete = admins.find((admin) => admin._id === adminId);
+      if (adminToDelete && adminToDelete.adminRoles.length === 3) {
+        // Check if this is the last admin with all three roles
+        const superAdmins = admins.filter((admin) => admin.adminRoles.length === 3);
+        if (superAdmins.length === 1) {
+          alert("This is the last admin with all three roles and cannot be deleted.");
+          return;
+        }
+      }
+
       await axios.delete(`http://localhost:3000/admin/${adminId}`);
       const updatedAdmins = admins.filter((admin) => admin._id !== adminId);
       setAdmins(updatedAdmins);
@@ -181,7 +192,16 @@ const Admins: React.FC<AdminsProps> = ({ admins, setAdmins }) => {
                 </button>
                 <button
                   onClick={() => deleteAdmin(admin._id!)}
-                  className="bg-red-500 cursor-pointer text-white p-2 rounded-md"
+                  className={`bg-red-500 cursor-pointer text-white p-2 rounded-md ${
+                    admin.adminRoles.length === 3 &&
+                    admins.filter((a) => a.adminRoles.length === 3).length === 1
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
+                  disabled={
+                    admin.adminRoles.length === 3 &&
+                    admins.filter((a) => a.adminRoles.length === 3).length === 1
+                  }
                 >
                   <Trash2 size={16} />
                 </button>

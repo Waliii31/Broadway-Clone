@@ -1,22 +1,20 @@
-import { Controller, Post, Body, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, Body, Put, Param } from '@nestjs/common';
 import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post('signup')
-  async signup(@Body() userDto: any) {
-    return this.userService.signup(userDto);
+  @Post('auth')
+  async authenticate(@Body() userData: { name: string; email: string; phoneNumber: string }) {
+    return this.userService.authenticate(userData);
   }
 
-  @Post('login')
-  async login(@Body() loginDto: { email: string; password: string }) {
-    try {
-      const token = await this.userService.login(loginDto);
-      return { message: 'Login successful', token };
-    } catch (error) {
-      throw new UnauthorizedException(error.message);
-    }
+  @Put(':id')
+  async updateUser(
+    @Param('id') userId: string,
+    @Body() updateData: { name?: string; email?: string; phoneNumber?: string },
+  ) {
+    return this.userService.updateUser(userId, updateData);
   }
 }

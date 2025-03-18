@@ -37,8 +37,8 @@ const OrderDetails = () => {
           status: "Cooking Food",
           paymentType: formData.paymentMethod === "cash" ? "Cash" : "Credit/Debit Card",
           products: cartItems.map((item: any) => ({
-              product: item.id,
-              quantity: item.quantity,
+            product: item.productId, // ✅ Use item.productId instead of item._id
+            quantity: item.quantity,
           })),
           totalPrice: totalPrice,
       };

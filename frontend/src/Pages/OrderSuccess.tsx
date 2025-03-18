@@ -3,11 +3,13 @@ import { useState, useEffect } from "react";
 import cookingFood from "../assets/cooking-food.gif";
 import delivering from "../assets/food-delivery.gif";
 import completed from "../assets/completed.gif";
+import { useCart } from "../context/CartContext"; // Import useCart
 
 const OrderSuccess = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const orderId = location.state?.orderId;
+    const { setCartItems } = useCart(); // Access setCartItems from CartContext
 
     const [orderStatus, setOrderStatus] = useState("Cooking Food");
 
@@ -32,16 +34,20 @@ const OrderSuccess = () => {
         };
 
         fetchOrderStatus();
-        const interval = setInterval(fetchOrderStatus, 60000); // Update status every 60 seconds
+        const interval = setInterval(fetchOrderStatus, 15000); // Update status every 60 seconds
 
         return () => clearInterval(interval);
     }, [orderId]);
+
+    // Clear the cart when the component mounts
+    useEffect(() => {
+        setCartItems([]); // Clear the cart
+    }, [setCartItems]);
 
     if (!orderId) {
         return <p className="text-white text-center text-xl">Order ID not found</p>;
     }
 
-    // ✅ Dynamically set image based on status
     const getStatusImage = () => {
         switch (orderStatus) {
             case "Delivering":

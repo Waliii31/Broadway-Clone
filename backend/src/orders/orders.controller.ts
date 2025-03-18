@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Patch, Query } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 
 @Controller('orders')
@@ -10,14 +10,29 @@ export class OrdersController {
     return this.ordersService.getOrderStatus(id);
   }
 
+  @Get('user-orders') 
+  async getOrdersByEmail(@Query('email') email: string) {
+    return this.ordersService.getOrdersByEmail(email);
+  }
+
   @Post()
   async createOrder(@Body() orderData: any) {
     return this.ordersService.createOrder(orderData);
   }
 
   @Get()
-  async getAllOrders() {
+  async getAllOrders(){
     return this.ordersService.getAllOrders();
+  }
+
+  @Get('cooking') // Unique path for cooking orders
+  async getCookingOrders() {
+    return this.ordersService.getCookingOrders();
+  }
+
+  @Get('delivering') // Unique path for delivering orders
+  async getDeliveringOrders() {
+    return this.ordersService.getDeliveringOrders();
   }
 
   @Get(':id')

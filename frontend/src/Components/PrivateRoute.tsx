@@ -1,9 +1,14 @@
 import { Navigate, Outlet } from "react-router-dom";
 
-const PrivateRoute = () => {
-    const token = localStorage.getItem("token"); // Retrieve JWT from localStorage
+export const PrivateAdmin = () => {
+  const token = localStorage.getItem("token"); // Retrieve JWT from localStorage
 
-    return token ? <Outlet /> : <Navigate to="/login" replace />;
+  return token ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
-export default PrivateRoute;
+export const PrivateUser = () => {
+  // Retrieve the token from localStorage
+  const token = localStorage.getItem("jwtToken");
+
+  return token ? <Outlet /> : <Navigate to="/user" replace />;
+};

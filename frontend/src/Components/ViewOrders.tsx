@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
+import { Trash2 } from "lucide-react";
 
 interface Product {
   _id: string;
@@ -22,46 +23,86 @@ interface Order {
   products: { product: Product; quantity: number }[];
 }
 
-const OrderReceiverPanel = () => {
+const ViewOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
-  const hasFetched = useRef(false);
+  const [filter, setFilter] = useState<string>("all"); // Filter state: all, Cooking Food, Delivering, Completed
 
+  // Fetch orders from the backend
   useEffect(() => {
-    if (!hasFetched.current) {
-      fetchCookingOrders();
-      hasFetched.current = true;
-    }
+    fetchOrders();
   }, []);
 
-  const fetchCookingOrders = async () => {
+  const fetchOrders = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/orders/cooking");
-      console.log("Cooking Orders:", response.data); // Debugging
+      const response = await axios.get("http://localhost:3000/orders");
       setOrders(response.data);
     } catch (error) {
-      console.error("Error fetching cooking orders:", error);
+      console.error("Error fetching orders:", error);
     }
   };
 
-  const markAsDelivering = async (orderId: string) => {
+  // Filter orders based on the selected filter
+  const filteredOrders = orders.filter((order) => {
+    if (filter === "all") return true;
+    return order.status === filter;
+  });
+
+  // Delete an order
+  const deleteOrder = async (orderId: string) => {
     try {
-      await axios.patch(`http://localhost:3000/orders/${orderId}`, {
-        status: "Delivering",
-      });
+      await axios.delete(`http://localhost:3000/orders/${orderId}`);
       setOrders((prevOrders) => prevOrders.filter((order) => order._id !== orderId));
     } catch (error) {
-      console.error("Error updating order:", error);
+      console.error("Error deleting order:", error);
     }
   };
 
   return (
-    <div className="p-8 bg-[#121212] min-h-screen text-white">
-      <h2 className="text-4xl font-bold mb-10 text-white text-center uppercase">Orders in Cooking</h2>
-      {orders.length === 0 ? (
-        <p className="text-gray-400">No orders currently being cooked.</p>
-      ) : (
-        <div className="space-y-6">
-          {orders.map((order) => (
+    <div className="p-6 bg-[#121212] text-white min-h-screen">
+      <h2 className="text-3xl font-bold mb-8 text-[#FDC700]">View Orders</h2>
+
+      {/* Filter Buttons */}
+      <div className="flex gap-4 mb-6">
+        <button
+          onClick={() => setFilter("all")}
+          className={`px-4 py-2 rounded-lg ${
+            filter === "all" ? "bg-[#FDC700] text-black" : "bg-[#202020] text-white"
+          }`}
+        >
+          All Orders
+        </button>
+        <button
+          onClick={() => setFilter("Cooking Food")}
+          className={`px-4 py-2 rounded-lg ${
+            filter === "Cooking Food" ? "bg-[#FDC700] text-black" : "bg-[#202020] text-white"
+          }`}
+        >
+          Cooking Food
+        </button>
+        <button
+          onClick={() => setFilter("Delivering")}
+          className={`px-4 py-2 rounded-lg ${
+            filter === "Delivering" ? "bg-[#FDC700] text-black" : "bg-[#202020] text-white"
+          }`}
+        >
+          Delivering
+        </button>
+        <button
+          onClick={() => setFilter("Completed")}
+          className={`px-4 py-2 rounded-lg ${
+            filter === "Completed" ? "bg-[#FDC700] text-black" : "bg-[#202020] text-white"
+          }`}
+        >
+          Completed
+        </button>
+      </div>
+
+      {/* Orders Table */}
+      <div className="space-y-6">
+        {filteredOrders.length === 0 ? (
+          <p className="text-gray-400">No orders found.</p>
+        ) : (
+          filteredOrders.map((order) => (
             <div key={order._id} className="bg-[#202020] p-6 rounded-lg shadow-lg">
               {/* Order Header */}
               <div className="flex justify-between items-center mb-4">
@@ -70,6 +111,8 @@ const OrderReceiverPanel = () => {
                   className={`px-3 py-1 rounded-full text-sm font-medium ${
                     order.status === "Cooking Food"
                       ? "bg-yellow-500 text-black"
+                      : order.status === "Delivering"
+                      ? "bg-blue-500 text-white"
                       : "bg-green-500 text-white"
                   }`}
                 >
@@ -114,21 +157,22 @@ const OrderReceiverPanel = () => {
                 </ul>
               </div>
 
-              {/* Action Button */}
+              {/* Delete Button */}
               <div className="mt-6 flex justify-end">
                 <button
-                  onClick={() => markAsDelivering(order._id)}
-                  className="bg-[#FDC700] text-black px-6 py-2 rounded-lg font-semibold hover:bg-[#e0b10e] transition-colors"
+                  onClick={() => deleteOrder(order._id)}
+                  className="bg-red-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-600 transition-colors"
                 >
-                  Mark as Delivering
+                  <Trash2 size={16} className="inline-block mr-2" />
+                  Delete Order
                 </button>
               </div>
             </div>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
     </div>
   );
 };
 
-export default OrderReceiverPanel;
+export default ViewOrders;

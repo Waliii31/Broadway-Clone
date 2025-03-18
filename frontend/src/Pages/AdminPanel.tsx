@@ -1,4 +1,3 @@
-// AdminPanel.tsx
 import axios from "axios";
 import { useEffect, useState } from "react";
 import Sidebar from "../Components/Sidebar";
@@ -6,6 +5,7 @@ import Sections from "../Components/Sections";
 import Products from "../Components/Products";
 import ViewProducts from "../Components/ViewProducts";
 import Admins from "../Components/Admins";
+import ViewOrders from "../Components/ViewOrders"; // Import the new component
 
 type Section = {
   _id: string;
@@ -14,7 +14,7 @@ type Section = {
 
 type Product = {
   _id: string;
-  section: Section; // Change this to match the expected type
+  section: Section;
   imageUrl: string;
   title: string;
   description: string;
@@ -35,7 +35,7 @@ const AdminPanel: React.FC = () => {
   const [activePage, setActivePage] = useState("sections");
   const [sections, setSections] = useState<Section[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [admins, setAdmins] = useState<Admin[]>([]); // Add state for admins
+  const [admins, setAdmins] = useState<Admin[]>([]);
 
   useEffect(() => {
     const fetchSections = async () => {
@@ -73,6 +73,7 @@ const AdminPanel: React.FC = () => {
           <ViewProducts products={products} setProducts={setProducts} />
         )}
         {activePage === "admins" && <Admins admins={admins} setAdmins={setAdmins} />}
+        {activePage === "view-orders" && <ViewOrders />} {/* Add the new component */}
       </div>
     </div>
   );

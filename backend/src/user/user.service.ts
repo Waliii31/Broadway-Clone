@@ -1,39 +1,45 @@
-import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { JwtService } from '@nestjs/jwt'; // Import JwtService
-import { User, UserDocument } from '../Schemas/user.schema';
+import * as jwt from 'jsonwebtoken';
+import { Users, UsersDocument } from '../Schemas/user.schema';
 
 @Injectable()
 export class UserService {
-  constructor(
-    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
-    private readonly jwtService: JwtService, // Inject JwtService
-  ) {}
+  constructor(@InjectModel(Users.name) private userModel: Model<UsersDocument>) {}
 
-  async signup(userDto: any) {
-    const existingUser = await this.userModel.findOne({ email: userDto.email });
-    if (existingUser) throw new ConflictException('User already exists');
-
-    const newUser = new this.userModel(userDto);
-    await newUser.save();
-    return { message: 'User created successfully' };
+  async authenticate(userData: { name: string; email: string; phoneNumber: string }) {
+    let user = await this.userModel.findOne({ email: userData.email });
+  
+    if (!user) {
+      user = new this.userModel(userData);
+      await user.save();
+    }
+  
+    const token = jwt.sign(
+      { id: user._id, name: user.name, email: user.email, phoneNumber: user.phoneNumber }, // Include user ID
+      process.env.JWT_SECRET || 'your_secret_key',
+      { expiresIn: '1h' }
+    );
+  
+    return { token, message: 'User logged in successfully', user };
   }
 
-  async login(loginDto: { email: string; password: string }) {
-    const user = await this.userModel.findOne({ email: loginDto.email }).exec();
+  async updateUser(userId: string, updateData: { name?: string; email?: string; phoneNumber?: string }) {
+    console.log('Updating user with ID:', userId); // Debugging: Log the userId
+    const user = await this.userModel.findById(userId);
+  
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new Error('User not found');
     }
-
-    const isPasswordValid = await user.comparePassword(loginDto.password);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    // Generate and return a JWT token
-    const payload = { email: user.email, sub: user._id };
-    const token = this.jwtService.sign(payload);
-    return { access_token: token };
+  
+    // Update only the fields provided in the updateData
+    if (updateData.name) user.name = updateData.name;
+    if (updateData.email) user.email = updateData.email;
+    if (updateData.phoneNumber) user.phoneNumber = updateData.phoneNumber;
+  
+    await user.save();
+  
+    return { message: 'User details updated successfully', user };
   }
 }

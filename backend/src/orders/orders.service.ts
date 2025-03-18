@@ -5,7 +5,7 @@ import { Orders, OrdersDocument } from '../Schemas/orders.schema';
 
 @Injectable()
 export class OrdersService {
-  constructor(@InjectModel(Orders.name) private ordersModel: Model<OrdersDocument>) {}
+  constructor(@InjectModel(Orders.name) private ordersModel: Model<OrdersDocument>) { }
 
   async getOrderStatus(id: string): Promise<{ status: string }> {
     const order = await this.ordersModel.findById(id).exec();
@@ -25,7 +25,7 @@ export class OrdersService {
       status: orderData.status || 'Cooking Food',
       paymentType: orderData.paymentType,
       products: orderData.products.map((product: any) => ({
-        product: product.product,
+        product: product.product, // Ensure this is the product ID
         quantity: product.quantity,
       })),
       totalPrice: orderData.totalPrice,
@@ -34,11 +34,47 @@ export class OrdersService {
   }
 
   async getAllOrders(): Promise<Orders[]> {
-    return this.ordersModel.find().populate('products.product').exec();
+    const orders = await this.ordersModel
+      .find()
+      .populate('products.product') // Populate the product details
+      .exec();
+    return orders;
+  }
+
+  async getOrdersByEmail(email: string): Promise<Orders[]> {
+    const orders = await this.ordersModel
+      .find({ email }) // Find orders with the provided email
+      .populate('products.product') // Populate the product details
+      .exec();
+
+    if (!orders || orders.length === 0) {
+      throw new NotFoundException(`No orders found for email: ${email}`);
+    }
+
+    return orders;
+  }
+
+  async getCookingOrders(): Promise<Orders[]> {
+    const orders = await this.ordersModel
+      .find({ status: 'Cooking Food' })
+      .populate('products.product')
+      .exec();
+    return orders;
+  }
+
+  async getDeliveringOrders(): Promise<Orders[]> {
+    const orders = await this.ordersModel
+      .find({ status: 'Delivering' })
+      .populate('products.product')
+      .exec();
+    return orders;
   }
 
   async getOrderById(id: string): Promise<Orders> {
-    const order = await this.ordersModel.findById(id).populate('products.product').exec();
+    const order = await this.ordersModel
+      .findById(id)
+      .populate('products.product') // Populate the product details
+      .exec();
     if (!order) {
       throw new NotFoundException(`Order with ID ${id} not found`);
     }
@@ -48,7 +84,7 @@ export class OrdersService {
   async updateOrder(id: string, updateData: any): Promise<Orders> {
     const updatedOrder = await this.ordersModel
       .findByIdAndUpdate(id, updateData, { new: true })
-      .populate('products.product')
+      .populate('products.product') // Populate the product details
       .exec();
     if (!updatedOrder) {
       throw new NotFoundException(`Order with ID ${id} not found`);
