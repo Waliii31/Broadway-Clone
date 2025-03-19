@@ -4,9 +4,9 @@ import { Section } from './section.schemas';
 
 export type ProductsDocument = Products & Document;
 
-@Schema({ timestamps: true }) // Adds createdAt and updatedAt fields
+@Schema({ timestamps: true }) 
 export class Products {
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Section' }) // Reference to Section
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Section' })
   section: Section;
 
   @Prop({ required: true })

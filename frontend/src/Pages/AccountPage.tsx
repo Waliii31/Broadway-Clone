@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+const nestUrl = import.meta.env.VITE_NEST_BASE_URL;
 
 const AccountPage = () => {
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState("my-orders");
   const [user, setUser] = useState({
     id: "", // Add ID field
@@ -50,7 +52,6 @@ const AccountPage = () => {
         }
   
         const decodedToken = jwtDecode<DecodedToken>(token); // Decode the token
-        console.log('Decoded Token:', decodedToken); // Debugging: Log the decoded token
   
         setUser({
           id: decodedToken.id, // Set ID
@@ -69,7 +70,7 @@ const AccountPage = () => {
   // Fetch orders from the backend
   const fetchOrders = async (email: string) => {
     try {
-      const response = await fetch(`http://localhost:3000/orders/user-orders?email=${email}`);
+      const response = await fetch(`${nestUrl}/orders/user-orders?email=${email}`);
       if (!response.ok) {
         throw new Error("Failed to fetch orders");
       }
@@ -99,7 +100,7 @@ const AccountPage = () => {
       }
   
       // Send updated data to the backend
-      const response = await fetch(`http://localhost:3000/user/${user.id}`, {
+      const response = await fetch(`${nestUrl}/user/${user.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -130,6 +131,11 @@ const AccountPage = () => {
     setIsEditing(false); // Exit edit mode
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("jwtToken"); // Remove the token
+    navigate("/user"); // Redirect to login page
+  };
+
   return (
     <div className="bg-[#121212] mt-20 min-h-screen text-white p-8 flex">
       {/* Sidebar */}
@@ -154,6 +160,14 @@ const AccountPage = () => {
             My Account
           </Link>
         </nav>
+
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          className="w-full mt-6 py-2 px-4 bg-red-600 text-white font-bold rounded-md hover:bg-red-700 transition"
+        >
+          Logout
+        </button>
       </div>
 
       {/* Main Content */}
@@ -170,7 +184,7 @@ const AccountPage = () => {
                   >
                     <div className="flex justify-between items-center mb-4">
                       <div>
-                        <p className="text-lg font-semibold">Order #{order._id}</p>
+                        <p className="text-lg font-semibold">Order ID# {order._id}</p>
                         <p className="text-gray-400">Date: {new Date(order.createdAt).toLocaleDateString()}</p>
                       </div>
                       <div>

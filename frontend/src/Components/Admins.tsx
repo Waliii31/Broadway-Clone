@@ -1,5 +1,7 @@
 import { Trash2, Edit } from "lucide-react";
 import { useState, useEffect } from "react";
+const nestUrl = import.meta.env.VITE_NEST_BASE_URL;
+console.log(nestUrl)
 import axios from "axios";
 
 interface Admin {
@@ -22,17 +24,16 @@ const Admins: React.FC<AdminsProps> = ({ admins, setAdmins }) => {
     adminPassword: "",
     adminRoles: [],
   });
-  const [editAdminId, setEditAdminId] = useState<string | null>(null); // Track admin being edited
+  const [editAdminId, setEditAdminId] = useState<string | null>(null); 
   const roles = ["Admin", "Orders Receiver", "Rider"];
 
-  // Fetch admins from the backend on component mount
   useEffect(() => {
     fetchAdmins();
   }, []);
 
   const fetchAdmins = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/admin");
+      const response = await axios.get(`${nestUrl}/admin`);
       // Ensure each admin has a roles array
       const validatedAdmins = response.data.map((admin: Admin) => ({
         ...admin,
@@ -47,7 +48,7 @@ const Admins: React.FC<AdminsProps> = ({ admins, setAdmins }) => {
   const addAdmin = async () => {
     if (newAdmin.adminEmail && newAdmin.adminPassword && newAdmin.adminRoles.length > 0) {
       try {
-        const response = await axios.post("http://localhost:3000/admin/create", {
+        const response = await axios.post(`${nestUrl}/admin/create`, {
           adminName: newAdmin.adminName,
           adminEmail: newAdmin.adminEmail,
           adminPassword: newAdmin.adminPassword,
@@ -70,12 +71,11 @@ const Admins: React.FC<AdminsProps> = ({ admins, setAdmins }) => {
           adminRoles: newAdmin.adminRoles,
         };
 
-        // Only include the password if it has been changed
         if (newAdmin.adminPassword) {
           payload.adminPassword = newAdmin.adminPassword;
         }
 
-        const response = await axios.put(`http://localhost:3000/admin/${editAdminId}`, payload);
+        const response = await axios.put(`${nestUrl}/admin/${editAdminId}`, payload);
         const updatedAdmins = admins.map((admin) =>
           admin._id === editAdminId ? response.data : admin
         );
@@ -101,7 +101,7 @@ const Admins: React.FC<AdminsProps> = ({ admins, setAdmins }) => {
         }
       }
 
-      await axios.delete(`http://localhost:3000/admin/${adminId}`);
+      await axios.delete(`${nestUrl}/admin/${adminId}`);
       const updatedAdmins = admins.filter((admin) => admin._id !== adminId);
       setAdmins(updatedAdmins);
     } catch (error) {

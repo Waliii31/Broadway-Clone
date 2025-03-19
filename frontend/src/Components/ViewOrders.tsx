@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Trash2 } from "lucide-react";
+const nestUrl = import.meta.env.VITE_NEST_BASE_URL;
 
 interface Product {
   _id: string;
@@ -34,7 +35,7 @@ const ViewOrders = () => {
 
   const fetchOrders = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/orders");
+      const response = await axios.get(`${nestUrl}/orders`);
       setOrders(response.data);
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -50,7 +51,7 @@ const ViewOrders = () => {
   // Delete an order
   const deleteOrder = async (orderId: string) => {
     try {
-      await axios.delete(`http://localhost:3000/orders/${orderId}`);
+      await axios.delete(`${nestUrl}/orders/${orderId}`);
       setOrders((prevOrders) => prevOrders.filter((order) => order._id !== orderId));
     } catch (error) {
       console.error("Error deleting order:", error);

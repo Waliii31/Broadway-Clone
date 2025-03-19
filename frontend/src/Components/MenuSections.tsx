@@ -1,5 +1,6 @@
 import { useContext, useState, useEffect } from "react";
 import { CartContext } from "../context/CartContext";
+const nestUrl = import.meta.env.VITE_NEST_BASE_URL;
 import Card from "./Card";
 import Banner from "./Banner";
 
@@ -35,11 +36,11 @@ const MenuSections = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const sectionsResponse = await fetch("http://localhost:3000/section");
+        const sectionsResponse = await fetch(`${nestUrl}/section`);
         const sectionsData: Section[] = await sectionsResponse.json();
         setSections(sectionsData);
 
-        const productsResponse = await fetch("http://localhost:3000/products");
+        const productsResponse = await fetch(`${nestUrl}/products`);
         const productsData: Product[] = await productsResponse.json();
         setMenuItems(productsData);
       } catch (err) {

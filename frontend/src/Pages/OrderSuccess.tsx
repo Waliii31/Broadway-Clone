@@ -4,6 +4,7 @@ import cookingFood from "../assets/cooking-food.gif";
 import delivering from "../assets/food-delivery.gif";
 import completed from "../assets/completed.gif";
 import { useCart } from "../context/CartContext"; // Import useCart
+const nestUrl = import.meta.env.VITE_NEST_BASE_URL;
 
 const OrderSuccess = () => {
     const location = useLocation();
@@ -23,7 +24,7 @@ const OrderSuccess = () => {
 
         const fetchOrderStatus = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/orders/${orderId}/status`);
+                const response = await fetch(`${nestUrl}/orders/${orderId}/status`);
                 if (!response.ok) throw new Error(`Failed to fetch order status (Status: ${response.status})`);
 
                 const data = await response.json();

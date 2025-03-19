@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
+const nestUrl = import.meta.env.VITE_NEST_BASE_URL;
 
 interface Product {
   _id: string;
@@ -35,7 +36,7 @@ const OrderReceiverPanel = () => {
 
   const fetchCookingOrders = async () => {
     try {
-      const response = await axios.get("http://localhost:3000/orders/cooking");
+      const response = await axios.get(`${nestUrl}/orders/cooking`);
       console.log("Cooking Orders:", response.data); // Debugging
       setOrders(response.data);
     } catch (error) {
@@ -45,7 +46,7 @@ const OrderReceiverPanel = () => {
 
   const markAsDelivering = async (orderId: string) => {
     try {
-      await axios.patch(`http://localhost:3000/orders/${orderId}`, {
+      await axios.patch(`${nestUrl}/orders/${orderId}`, {
         status: "Delivering",
       });
       setOrders((prevOrders) => prevOrders.filter((order) => order._id !== orderId));

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+const nestUrl = import.meta.env.VITE_NEST_BASE_URL;
 
 interface Product {
   _id: string;
@@ -46,7 +47,7 @@ const Products: React.FC<ProductsProps> = ({ sections, setProducts }) => {
     formData.append("file", file);
 
     try {
-      const response = await axios.post("http://localhost:3000/products/image", formData, {
+      const response = await axios.post(`${nestUrl}/products/image`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -87,11 +88,11 @@ const Products: React.FC<ProductsProps> = ({ sections, setProducts }) => {
     try {
       if (editingProduct) {
         // Update existing product
-        await axios.put(`http://localhost:3000/products/${product._id}`, productData);
+        await axios.put(`${nestUrl}/products/${product._id}`, productData);
         alert("Product updated successfully!");
       } else {
         // Add new product
-        await axios.post("http://localhost:3000/products", productData);
+        await axios.post(`${nestUrl}/products`, productData);
         alert("Product added successfully!");
       }
       setProduct({
@@ -106,7 +107,7 @@ const Products: React.FC<ProductsProps> = ({ sections, setProducts }) => {
         isNew: false,
       });
       setEditingProduct(false);
-      const { data } = await axios.get("http://localhost:3000/products");
+      const { data } = await axios.get(`${nestUrl}/products`);
       setProducts(data);
     } catch (error: any) {
       console.error("Error adding/updating product:", error);

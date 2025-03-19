@@ -30,7 +30,6 @@ export class Admins {
 
 export const AdminsSchema = SchemaFactory.createForClass(Admins);
 
-// ✅ Hash password before saving
 AdminsSchema.pre<AdminsDocument>('save', async function (next) {
   if (this.isModified('adminPassword')) {
     this.adminPassword = await bcrypt.hash(this.adminPassword, 10);

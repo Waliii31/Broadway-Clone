@@ -13,7 +13,7 @@ import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
-    MongooseModule.forRoot('mongodb://localhost/broadway'),
+    MongooseModule.forRoot(process.env.MONGO_URI || 'mongodb://localhost/default-db'),
     ConfigModule.forRoot(),
     UserModule,
     SectionModule,

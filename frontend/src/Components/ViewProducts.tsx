@@ -1,5 +1,6 @@
 import { Trash2 } from "lucide-react";
 import axios from "axios";
+const nestUrl = import.meta.env.VITE_NEST_BASE_URL;
 
 interface Product {
   _id: string;
@@ -21,9 +22,9 @@ interface ViewProductsProps {
 const ViewProducts: React.FC<ViewProductsProps> = ({ products, setProducts }) => {
   const deleteProduct = async (id: string) => {
     try {
-      await axios.delete(`http://localhost:3000/products/${id}`);
+      await axios.delete(`${nestUrl}/products/${id}`);
       alert("Product deleted successfully!");
-      const { data } = await axios.get("http://localhost:3000/products");
+      const { data } = await axios.get(`${nestUrl}/products`);
       setProducts(data);
     } catch (error) {
       console.error("Error deleting product:", error);

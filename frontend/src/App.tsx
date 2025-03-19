@@ -23,6 +23,7 @@ function App() {
   // Define routes where Header/Footer should NOT be shown
   const hideHeaderFooterRoutes = [
     "/admin",
+    "/Admin",
     "/select-roles",
     "/delivery",
     "/order-receiver",

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+const nestUrl = import.meta.env.VITE_NEST_BASE_URL;
 
 const OrderDetails = () => {
     const location = useLocation();
@@ -44,7 +45,7 @@ const OrderDetails = () => {
       };
   
       try {
-          const response = await fetch("http://localhost:3000/orders", {
+          const response = await fetch(`${nestUrl}/orders`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(orderData),
@@ -56,7 +57,7 @@ const OrderDetails = () => {
               console.log("Order created successfully. Fetching order details...");
   
               // Fetch the newly created order using its ID
-              const orderResponse = await fetch(`http://localhost:3000/orders/${data._id}`);
+              const orderResponse = await fetch(`${nestUrl}/orders/${data._id}`);
               const orderData = await orderResponse.json();
   
               if (orderResponse.ok) {

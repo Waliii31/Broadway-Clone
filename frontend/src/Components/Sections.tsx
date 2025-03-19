@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Plus, Edit, Trash } from "lucide-react";
+const nestUrl = import.meta.env.VITE_NEST_BASE_URL;
 import axios from "axios";
 
 interface Section {
@@ -20,7 +21,7 @@ const Sections: React.FC<SectionsProps> = ({ sections, setSections }) => {
   const addSection = async () => {
     if (newSection.trim()) {
       try {
-        const response = await axios.post("http://localhost:3000/section", {
+        const response = await axios.post(`${nestUrl}/section`, {
           title: newSection,
         });
         setSections([...sections, response.data]);
@@ -36,7 +37,7 @@ const Sections: React.FC<SectionsProps> = ({ sections, setSections }) => {
     if (!editingSection) return;
 
     try {
-      await axios.put(`http://localhost:3000/section/${editingSection}`, {
+      await axios.put(`${nestUrl}/section/${editingSection}`, {
         title: editText,
       });
       setSections(
@@ -59,7 +60,7 @@ const Sections: React.FC<SectionsProps> = ({ sections, setSections }) => {
 
   const deleteSection = async (id: string) => {
     try {
-      await axios.delete(`http://localhost:3000/section/${id}`);
+      await axios.delete(`${nestUrl}/section/${id}`);
       setSections(sections.filter((section) => section._id !== id));
     } catch (error) {
       console.error("Error deleting section:", error);

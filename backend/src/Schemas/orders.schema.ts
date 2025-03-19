@@ -3,20 +3,18 @@ import { Document, Schema as MongooseSchema } from 'mongoose';
 
 export type OrdersDocument = Orders & Document;
 
-// ✅ Define Enum for Order Status
 export enum OrderStatus {
   COOKING = "Cooking Food",
   DELIVERING = "Delivering",
   COMPLETED = "Completed",
 }
 
-// ✅ Define Enum for Payment Type
 export enum PaymentType {
   CASH = "Cash",
   CARD = "Credit/Debit Card",
 }
 
-@Schema({ timestamps: true }) // Adds createdAt and updatedAt fields
+@Schema({ timestamps: true }) 
 export class Orders {
   @Prop({ type: [{ product: { type: MongooseSchema.Types.ObjectId, ref: 'Products' }, quantity: Number }] })
   products: { product: string; quantity: number }[];

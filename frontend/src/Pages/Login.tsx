@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+const nestUrl = import.meta.env.VITE_NEST_BASE_URL;
 
 const Login = () => {
     const [email, setEmail] = useState("");
@@ -13,7 +14,7 @@ const Login = () => {
         setError(""); // Clear previous errors
 
         try {
-            const response = await axios.post("http://localhost:3000/admin/login", { 
+            const response = await axios.post(`${nestUrl}/admin/login`, { 
                 email, 
                 password 
             });

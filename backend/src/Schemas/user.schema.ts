@@ -3,8 +3,9 @@ import { Document } from 'mongoose';
 
 export type UsersDocument = Users & Document;
 
-@Schema({ timestamps: true }) // Adds createdAt and updatedAt fields
+@Schema({ timestamps: true })
 export class Users {
+
   @Prop({ required: true })
   name: string;
 

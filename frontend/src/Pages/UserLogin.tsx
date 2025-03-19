@@ -1,9 +1,18 @@
 import axios from "axios";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+const nestUrl = import.meta.env.VITE_NEST_BASE_URL;
 
 const UserLogin = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+
+  // Check if the user is already logged in
+  useEffect(() => {
+    const token = localStorage.getItem("jwtToken");
+    if (token) {
+      navigate("/account"); // Redirect if user is already logged in
+    }
+  }, [navigate]);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -17,22 +26,16 @@ const UserLogin = () => {
     phoneNumber: "",
   });
 
-  // Function to format the phoneNumber number
   const formatPhoneNumber = (value: string) => {
-    // Remove all non-digit characters
     const cleaned = value.replace(/\D/g, "");
-    // Ensure the input starts with +92
     if (!cleaned.startsWith("92")) {
       return "+92 ";
     }
-    // Extract the remaining digits (after +92)
     const remainingDigits = cleaned.slice(2);
-    // Format the remaining digits into XXX-XXX-XXXX
     const match = remainingDigits.match(/^(\d{3})(\d{3})(\d{4})$/);
     if (match) {
       return `+92 ${match[1]}-${match[2]}-${match[3]}`;
     }
-    // If not fully formatted, return the cleaned value with +92
     return `+92 ${remainingDigits}`;
   };
 
@@ -40,7 +43,6 @@ const UserLogin = () => {
     const { name, value } = e.target;
 
     if (name === "phoneNumber") {
-      // Format the phoneNumber number
       const formattedPhone = formatPhoneNumber(value);
       setFormData({
         ...formData,
@@ -53,7 +55,6 @@ const UserLogin = () => {
       });
     }
 
-    // Clear errors when the user starts typing
     setErrors({
       ...errors,
       [name]: "",
@@ -93,21 +94,19 @@ const UserLogin = () => {
     e.preventDefault();
     if (validateForm()) {
       try {
-        const response = await axios.post('http://localhost:3000/user/auth', formData);
-        console.log('Response:', response.data);
-        
-        // Store the token in local storage
-        localStorage.setItem('jwtToken', response.data.token); // Ensure the key is 'jwtToken'
-        console.log('Token stored in localStorage:', localStorage.getItem('jwtToken'));
-        
+        const response = await axios.post(`${nestUrl}/user/auth`, formData);
+        console.log("Response:", response.data);
+
+        localStorage.setItem("jwtToken", response.data.token);
+        console.log("Token stored in localStorage:", localStorage.getItem("jwtToken"));
+
         alert(response.data.message);
-        setFormData({ name: '', email: '', phoneNumber: '+92 ' });
-        
-        // Redirect to the account page
-        navigate("/account"); // Only pass the path
+        setFormData({ name: "", email: "", phoneNumber: "+92 " });
+
+        navigate("/account");
       } catch (error) {
-        console.error('Error:', error);
-        alert('An error occurred while processing your request.');
+        console.error("Error:", error);
+        alert("An error occurred while processing your request.");
       }
     }
   };

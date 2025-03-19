@@ -3,7 +3,7 @@ import { Document } from 'mongoose';
 
 export type SectionDocument = Section & Document;
 
-@Schema({ timestamps: true }) // Adds createdAt and updatedAt fields
+@Schema({ timestamps: true })
 export class Section {
   @Prop({ required: true })
   title: string;

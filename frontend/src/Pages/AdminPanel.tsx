@@ -5,7 +5,8 @@ import Sections from "../Components/Sections";
 import Products from "../Components/Products";
 import ViewProducts from "../Components/ViewProducts";
 import Admins from "../Components/Admins";
-import ViewOrders from "../Components/ViewOrders"; // Import the new component
+import ViewOrders from "../Components/ViewOrders";
+const nestUrl = import.meta.env.VITE_NEST_BASE_URL;
 
 type Section = {
   _id: string;
@@ -40,7 +41,7 @@ const AdminPanel: React.FC = () => {
   useEffect(() => {
     const fetchSections = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/section");
+        const response = await axios.get(`${nestUrl}/section`);
         setSections(response.data);
       } catch (error) {
         console.error("Error fetching sections:", error);
@@ -53,7 +54,7 @@ const AdminPanel: React.FC = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const { data } = await axios.get("http://localhost:3000/products");
+        const { data } = await axios.get(`${nestUrl}/products`);
         setProducts(data);
       } catch (error) {
         console.error("Error fetching products:", error);

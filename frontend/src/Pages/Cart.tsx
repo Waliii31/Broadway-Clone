@@ -3,6 +3,7 @@ import { useCart } from "../context/CartContext";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { ArrowRight, Minus, Plus } from "lucide-react";
+const nestUrl = import.meta.env.VITE_NEST_BASE_URL;
 
 interface Product {
   _id: string;
@@ -24,7 +25,7 @@ const Cart: React.FC = () => {
       try {
         const responses = await Promise.all(
           cartItems.map((item) =>
-            axios.post("http://localhost:3000/products/find-product", {
+            axios.post(`${nestUrl}/products/find-product`, {
               productId: item.id,
             })
           )
